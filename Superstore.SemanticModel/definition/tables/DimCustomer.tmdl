@@ -1,0 +1,29 @@
+/// One row per customer (natural key Customer ID).
+table DimCustomer
+	lineageTag: 5a0a439f-0cb1-4694-a480-da70ed58fff6
+
+	column 'Customer ID'
+		dataType: string
+		isHidden
+		lineageTag: 63a41fa9-7d78-4501-ba30-d26b0751f749
+		sourceColumn: Customer ID
+
+	column 'Customer Name'
+		dataType: string
+		lineageTag: fb2b519c-6d58-4917-94c0-b2c167c87bbd
+		sourceColumn: Customer Name
+
+	column Segment
+		dataType: string
+		lineageTag: 8e264d39-dd49-46d5-a57f-61a7c903118d
+		sourceColumn: Segment
+
+	partition DimCustomer = m
+		mode: import
+		source =
+				let
+				    Source   = Table.SelectColumns(stg_Superstore, {"Customer ID", "Customer Name", "Segment"}),
+				    Distinct = Table.Distinct(Source, {"Customer ID"})
+				in
+				    Distinct
+

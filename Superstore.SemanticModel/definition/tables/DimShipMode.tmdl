@@ -1,0 +1,18 @@
+/// One row per ship mode.
+table DimShipMode
+	lineageTag: 884351fa-f112-415f-a9ba-54ab3f180ba4
+
+	column 'Ship Mode'
+		dataType: string
+		lineageTag: 000da017-90bd-4bc2-acd5-90dce769588b
+		sourceColumn: Ship Mode
+
+	partition DimShipMode = m
+		mode: import
+		source =
+				let
+				    Source   = Table.SelectColumns(stg_Superstore, {"Ship Mode"}),
+				    Distinct = Table.Distinct(Source)
+				in
+				    Distinct
+

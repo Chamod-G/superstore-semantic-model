@@ -1,0 +1,71 @@
+/// Calendar table covering full years from the first order to the last ship date. Role-playing: active on Order Date, inactive on Ship Date.
+table DimDate
+	lineageTag: 8eb375f8-c96a-4c59-af65-917c5bfb9a0b
+	dataCategory: Time
+
+	column Date
+		isUnique
+		formatString: yyyy-mm-dd
+		lineageTag: b624f0f9-58c7-45a7-93b0-a4cad61f7feb
+		isNameInferred
+		sourceColumn: [Date]
+
+	column Year
+		lineageTag: 5bdf1673-37fe-415b-bc49-36fb4241df0d
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Year]
+
+	column Quarter
+		lineageTag: fab3892c-b2b5-4aab-891d-e2973655c8b2
+		isNameInferred
+		sourceColumn: [Quarter]
+
+	column 'Month Number'
+		isHidden
+		lineageTag: 6cad7798-9003-4fe8-891b-fb55e910e690
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Month Number]
+
+	column Month
+		lineageTag: c3507edb-2b87-4c90-acd9-d1ba12fdfad7
+		isNameInferred
+		sourceColumn: [Month]
+		sortByColumn: 'Month Number'
+
+	column 'Year Month'
+		lineageTag: 502a50b7-a7a5-4315-b4a2-47313578943c
+		isNameInferred
+		sourceColumn: [Year Month]
+
+	column 'Weekday Number'
+		isHidden
+		lineageTag: e5ce3838-a956-40bc-a516-f968f7139c13
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Weekday Number]
+
+	column Weekday
+		lineageTag: 05fbbbd3-3883-4823-97ec-0f8725ac212e
+		isNameInferred
+		sourceColumn: [Weekday]
+		sortByColumn: 'Weekday Number'
+
+	partition DimDate = calculated
+		mode: import
+		source =
+				VAR MinYear = YEAR ( MIN ( FactSales[Order Date] ) )
+				VAR MaxYear = YEAR ( MAX ( FactSales[Ship Date] ) )
+				RETURN
+				    ADDCOLUMNS (
+				        CALENDAR ( DATE ( MinYear, 1, 1 ), DATE ( MaxYear, 12, 31 ) ),
+				        "Year", YEAR ( [Date] ),
+				        "Quarter", "Q" & QUARTER ( [Date] ),
+				        "Month Number", MONTH ( [Date] ),
+				        "Month", FORMAT ( [Date], "mmm" ),
+				        "Year Month", FORMAT ( [Date], "yyyy-mm" ),
+				        "Weekday Number", WEEKDAY ( [Date], 2 ),
+				        "Weekday", FORMAT ( [Date], "ddd" )
+				    )
+

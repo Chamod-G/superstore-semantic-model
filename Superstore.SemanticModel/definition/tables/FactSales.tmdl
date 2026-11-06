@@ -1,0 +1,93 @@
+/// Sales fact. Grain: one row per order line (Row ID). Order ID is a degenerate dimension.
+table FactSales
+	lineageTag: dc201d28-3d07-4565-9fe6-610554de26dc
+
+	column 'Row ID'
+		dataType: int64
+		isHidden
+		lineageTag: 687529c8-5811-4253-a69a-d144c3b70f74
+		summarizeBy: none
+		sourceColumn: Row ID
+
+	column 'Order ID'
+		dataType: string
+		lineageTag: 0f12d29f-35b1-4643-9246-3a5fdaf31cc6
+		sourceColumn: Order ID
+
+	column 'Order Date'
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		lineageTag: e74f2b5d-57a0-48b9-b6d6-dc02d52aaada
+		sourceColumn: Order Date
+
+	column 'Ship Date'
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		lineageTag: 01985e47-15b2-494a-aea0-4ab05941101f
+		sourceColumn: Ship Date
+
+	column 'Customer ID'
+		dataType: string
+		isHidden
+		lineageTag: 12e97823-bb41-44e3-91be-1c0d85939a15
+		sourceColumn: Customer ID
+
+	column 'Product ID'
+		dataType: string
+		isHidden
+		lineageTag: eb83c533-ea5c-4b1e-b3a0-110fda63226e
+		sourceColumn: Product ID
+
+	column GeoKey
+		dataType: int64
+		isHidden
+		lineageTag: beeceb8d-2827-4b4d-9e71-6ef446ecb08a
+		summarizeBy: none
+		sourceColumn: GeoKey
+
+	column 'Ship Mode'
+		dataType: string
+		isHidden
+		lineageTag: 087cd700-f418-438b-a31f-bfa571f429b4
+		sourceColumn: Ship Mode
+
+	column Sales
+		dataType: decimal
+		isHidden
+		formatString: \$#,0.00
+		lineageTag: 9c75df93-2747-4878-844b-0e449ff0eb90
+		sourceColumn: Sales
+
+	column Quantity
+		dataType: int64
+		isHidden
+		lineageTag: cad43446-bdce-4187-aa7b-c795f993ce60
+		sourceColumn: Quantity
+
+	column Discount
+		dataType: double
+		isHidden
+		formatString: 0%
+		lineageTag: 53b936e9-ef54-4d27-afcd-b1f832d19290
+		sourceColumn: Discount
+
+	column Profit
+		dataType: decimal
+		isHidden
+		formatString: \$#,0.00
+		lineageTag: 17267339-86bc-4a71-bd57-5fbb77b2afa4
+		sourceColumn: Profit
+
+	partition FactSales = m
+		mode: import
+		source =
+				let
+				    Source   = stg_Superstore,
+				    Merged   = Table.NestedJoin(Source, {"Country", "Region", "State", "City", "Postal Code"}, stg_Geography, {"Country", "Region", "State", "City", "Postal Code"}, "Geo", JoinKind.LeftOuter),
+				    GeoKey   = Table.ExpandTableColumn(Merged, "Geo", {"GeoKey"}),
+				    Selected = Table.SelectColumns(GeoKey, {"Row ID", "Order ID", "Order Date", "Ship Date", "Customer ID", "Product ID", "GeoKey", "Ship Mode", "Sales", "Quantity", "Discount", "Profit"})
+				in
+				    Selected
+

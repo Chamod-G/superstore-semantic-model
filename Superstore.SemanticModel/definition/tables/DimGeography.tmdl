@@ -1,0 +1,44 @@
+/// One row per location, keyed by the surrogate key GeoKey.
+table DimGeography
+	lineageTag: 1db9b0ef-c452-4f6e-8315-519831a85f4c
+
+	column GeoKey
+		dataType: int64
+		isHidden
+		lineageTag: cef96156-4d52-4b5f-8311-8683b41cb2a7
+		summarizeBy: none
+		sourceColumn: GeoKey
+
+	column Country
+		dataType: string
+		lineageTag: 604ce9af-464c-464f-a99f-f994b3f7a2fa
+		dataCategory: Country
+		sourceColumn: Country
+
+	column Region
+		dataType: string
+		lineageTag: e8834f64-58e5-4e07-8141-342549d0af1c
+		sourceColumn: Region
+
+	column State
+		dataType: string
+		lineageTag: e2d0275a-70d4-4d8f-9074-cbde291fdb3f
+		dataCategory: StateOrProvince
+		sourceColumn: State
+
+	column City
+		dataType: string
+		lineageTag: 7a1ba542-2f2e-486b-9174-e430a07da884
+		dataCategory: City
+		sourceColumn: City
+
+	column 'Postal Code'
+		dataType: string
+		lineageTag: f177cb98-9976-48c8-93eb-13cd78311ba3
+		dataCategory: PostalCode
+		sourceColumn: Postal Code
+
+	partition DimGeography = m
+		mode: import
+		source = stg_Geography
+

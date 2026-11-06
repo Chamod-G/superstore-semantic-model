@@ -1,0 +1,29 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	discourageImplicitMeasures
+	sourceQueryCulture: en-US
+	valueFilterBehavior: independent
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBI_ProTooling = ["MCP-PBIModeling","DevMode"]
+
+annotation PBI_QueryOrder = ["DimCustomer","DimProduct","DimGeography","DimShipMode","FactSales","SourcePath","stg_Superstore","stg_Geography"]
+
+ref table DimCustomer
+ref table DimProduct
+ref table DimGeography
+ref table DimShipMode
+ref table FactSales
+ref table DimDate
+ref table _Measures
+ref table 'Time Intelligence'
+
+ref role 'Region West'
+
+ref cultureInfo en-US
+

@@ -1,0 +1,8 @@
+/// Sees only West region data.
+role 'Region West'
+	modelPermission: read
+
+	tablePermission DimGeography = [Region] = "West"
+
+	annotation PBI_Id = f912fe7bb331453e9e2c8a532313e533
+

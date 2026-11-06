@@ -1,0 +1,68 @@
+/// Home table for all measures.
+table _Measures
+	lineageTag: 842551bb-1ab2-4d39-89d7-3e09acf8b820
+
+	/// Sum of sales value after discount, by order date.
+	measure 'Total Sales' = SUM ( FactSales[Sales] )
+		formatString: \$#,0
+		displayFolder: Sales
+		lineageTag: 4fb8cdd1-270a-4795-a715-11e84cd5d375
+
+	/// Sum of profit, by order date.
+	measure 'Total Profit' = SUM ( FactSales[Profit] )
+		formatString: \$#,0
+		displayFolder: Sales
+		lineageTag: dd1088ba-3794-4130-9c1e-3b7979714d3c
+
+	/// Total Profit divided by Total Sales. Blank when there are no sales.
+	measure 'Profit Margin %' = DIVIDE ( [Total Profit], [Total Sales] )
+		formatString: 0.0%
+		displayFolder: Sales
+		lineageTag: c31b3a5c-36c8-41a6-bf4a-aa84585c7320
+
+	/// Number of units sold.
+	measure 'Total Quantity' = SUM ( FactSales[Quantity] )
+		formatString: #,0
+		displayFolder: Sales
+		lineageTag: 69e975e9-8ccf-4007-9a42-c89063f370e7
+
+	/// Distinct orders. The fact grain is order line, so rows are not orders.
+	measure 'Order Count' = DISTINCTCOUNT ( FactSales[Order ID] )
+		formatString: #,0
+		displayFolder: Orders
+		lineageTag: e8bc3c8f-550a-4661-af2e-ccadb03bcd07
+
+	/// Distinct customers who placed an order.
+	measure 'Customer Count' = DISTINCTCOUNT ( FactSales[Customer ID] )
+		formatString: #,0
+		displayFolder: Orders
+		lineageTag: dfde0b03-3d8a-4a28-b58f-26ca03ee8265
+
+	/// Total Sales divided by Order Count.
+	measure 'Average Order Value' = DIVIDE ( [Total Sales], [Order Count] )
+		formatString: \$#,0.00
+		displayFolder: Orders
+		lineageTag: 449704b0-2ce1-4d88-83f6-d0213a04c352
+
+	/// Average days between order date and ship date, per order line.
+	measure 'Avg Days to Ship' = AVERAGEX ( FactSales, DATEDIFF ( FactSales[Order Date], FactSales[Ship Date], DAY ) )
+		formatString: 0.0
+		displayFolder: Shipping
+		lineageTag: 3c6b96f1-149a-4ccf-b544-3ce6317bab7c
+
+	/// Total Sales sliced by ship date instead of order date, using the inactive date relationship.
+	measure 'Sales by Ship Date' = CALCULATE ( [Total Sales], USERELATIONSHIP ( FactSales[Ship Date], DimDate[Date] ) )
+		formatString: \$#,0
+		displayFolder: Shipping
+		lineageTag: 2c6bd5af-2234-46b9-bc9c-f50b05114042
+
+	column Placeholder
+		isHidden
+		lineageTag: 39234aab-734c-475d-98f9-aad7a20b0361
+		isNameInferred
+		sourceColumn: [Placeholder]
+
+	partition _Measures = calculated
+		mode: import
+		source = ROW ( "Placeholder", BLANK () )
+

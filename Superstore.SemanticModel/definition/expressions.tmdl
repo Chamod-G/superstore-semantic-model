@@ -1,0 +1,47 @@
+/// Full path to the Superstore Excel file. Change per environment.
+expression SourcePath = "D:\nz\full time\practice\EROAD project\data\Superstore_data_xl.xlsx" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 64602e05-c636-4b9b-8e0f-60fddf56f00a
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Text
+
+/// Staging query: reads the raw Superstore sheet, fixes day/month-swapped dates, sets types. Not loaded to the model.
+expression stg_Superstore =
+		let
+		    Source   = Excel.Workbook(File.Contents(SourcePath), null, true),
+		    Sheet    = Source{[Item = "Superstore_data - Copy", Kind = "Sheet"]}[Data],
+		    Promoted = Table.PromoteHeaders(Sheet, [PromoteAllScalars = true]),
+		    // Excel read the original US dates (m/d/yyyy) as d/m when the day was 12 or less,
+		    // producing real dates with day and month swapped. The rest stayed as US-format text.
+		    FixDate  = (v) =>
+		        if v is datetime then #date(Date.Year(v), Date.Day(v), Date.Month(v))
+		        else if v is date then #date(Date.Year(v), Date.Day(v), Date.Month(v))
+		        else Date.FromText(Text.From(v), [Culture = "en-US"]),
+		    Dates    = Table.TransformColumns(Promoted, {
+		                   {"Order Date", FixDate, type date},
+		                   {"Ship Date",  FixDate, type date},
+		                   {"Postal Code", each Text.PadStart(Text.From(_), 5, "0"), type text}}),
+		    Typed    = Table.TransformColumnTypes(Dates, {
+		                   {"Row ID", Int64.Type}, {"Order ID", type text}, {"Ship Mode", type text},
+		                   {"Customer ID", type text}, {"Customer Name", type text}, {"Segment", type text},
+		                   {"Country", type text}, {"City", type text}, {"State", type text}, {"Region", type text},
+		                   {"Product ID", type text}, {"Category", type text}, {"Sub-Category", type text},
+		                   {"Product Name", type text},
+		                   {"Sales", Currency.Type}, {"Quantity", Int64.Type},
+		                   {"Discount", type number}, {"Profit", Currency.Type}})
+		in
+		    Typed
+	lineageTag: 14111868-d901-4b59-8eed-729d4651d38f
+
+/// Distinct locations with a surrogate key (GeoKey). Shared by DimGeography and FactSales. Not loaded.
+expression stg_Geography =
+		let
+		    Source   = Table.SelectColumns(stg_Superstore, {"Country", "Region", "State", "City", "Postal Code"}),
+		    Distinct = Table.Distinct(Source),
+		    Sorted   = Table.Sort(Distinct, {{"Country", Order.Ascending}, {"Region", Order.Ascending}, {"State", Order.Ascending}, {"City", Order.Ascending}, {"Postal Code", Order.Ascending}}),
+		    Indexed  = Table.AddIndexColumn(Sorted, "GeoKey", 1, 1, Int64.Type)
+		in
+		    Indexed
+	lineageTag: 6a8ac13f-a960-48c1-8f20-5be5febe84a6
+

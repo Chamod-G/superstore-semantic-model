@@ -1,0 +1,34 @@
+/// One row per Product ID. Source has 32 Product IDs with two names; the first name is kept so the key stays unique.
+table DimProduct
+	lineageTag: 23527813-4323-4b94-9f26-2fdefce31015
+
+	column 'Product ID'
+		dataType: string
+		isHidden
+		lineageTag: 2b688571-8f06-4974-afef-f97b05aa359f
+		sourceColumn: Product ID
+
+	column 'Product Name'
+		dataType: string
+		lineageTag: 8774242f-7151-46ab-907c-737efccfbc85
+		sourceColumn: Product Name
+
+	column Category
+		dataType: string
+		lineageTag: 0ad074d5-aca9-4f81-bba2-2c9b972b15a6
+		sourceColumn: Category
+
+	column Sub-Category
+		dataType: string
+		lineageTag: 5ebdcb01-91ad-43dd-a279-3eaf0183e4d2
+		sourceColumn: Sub-Category
+
+	partition DimProduct = m
+		mode: import
+		source =
+				let
+				    Source   = Table.SelectColumns(stg_Superstore, {"Product ID", "Product Name", "Category", "Sub-Category"}),
+				    Distinct = Table.Distinct(Source, {"Product ID"})
+				in
+				    Distinct
+

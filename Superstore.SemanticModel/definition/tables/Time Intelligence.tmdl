@@ -1,0 +1,30 @@
+table 'Time Intelligence'
+	lineageTag: a7f7060c-5f65-4219-889d-cccf6ed4ce92
+
+	/// Applies time calculations to any measure.
+	calculationGroup
+		precedence: 10
+
+		/// The measure as is.
+		calculationItem Current = SELECTEDMEASURE ()
+
+		/// Year to date.
+		calculationItem YTD = CALCULATE ( SELECTEDMEASURE (), DATESYTD ( DimDate[Date] ) )
+
+		/// Same period last year.
+		calculationItem PY = CALCULATE ( SELECTEDMEASURE (), SAMEPERIODLASTYEAR ( DimDate[Date] ) )
+
+		/// Change versus same period last year.
+		calculationItem 'YoY %' =
+				VAR Cur = SELECTEDMEASURE ()
+				VAR Prev = CALCULATE ( SELECTEDMEASURE (), SAMEPERIODLASTYEAR ( DimDate[Date] ) )
+				RETURN IF ( NOT ISBLANK ( Cur ), DIVIDE ( Cur - Prev, Prev ) )
+
+			formatStringDefinition = "0.0%"
+
+	column Period
+		dataType: string
+		lineageTag: 6fb508c2-9efb-4fb9-b410-50ce2330ce2c
+
+	partition 'Partition_Time Intelligence' = calculationGroup
+
